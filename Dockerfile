@@ -1,6 +1,6 @@
 # gentest
 # Here you can use whatever base image is relevant for your application.
-FROM iopconttest-registry-quay-quay-enterprise.apps.iopconttest.css.id.ohio.gov/timhessing/genomics-test:0.0
+FROM iopconttest-registry-quay-quay-enterprise.apps.iopconttest.css.id.ohio.gov/timhessing/genomics-test:0.1
 
 # Here you can specify the maintainer for the image that you're building
 LABEL maintainer="Tim Hessing <tim.hessing@das.ohio.gov>"
