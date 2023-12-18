@@ -1,0 +1,11 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: mailrc-analysis
+  namespace: test-01
+immutable: false
+data:
+  .mailrc: |-
+    set from="NO-REPLY-ANALYSIS@das.ohio.gov"
+    set smtp=smtp://soccsmtp.das.ohio.gov:25
+    set ssl-verify=ignore

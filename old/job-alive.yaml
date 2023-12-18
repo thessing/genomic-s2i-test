@@ -1,0 +1,90 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: job-alive
+  namespace: test-01
+immutable: false
+data:
+  job.sh: >-
+    #!/bin/sh -x
+
+    #
+
+    # The run script executes the server that runs your application.
+
+    #
+
+    date
+
+    #
+
+    KEYTAB=$HOME/$RUNUSER.keytab
+
+    PRINCIPAL=$RUNUSER@ID.OHIO.GOV
+
+    KINIT=/usr/bin/kinit
+
+    CURL=/usr/bin/curl
+
+    HTTPFS="https://httpfs.c12.data.ohio.gov:14000/webhdfs/v1"
+
+    #
+
+    echo ">>>>> Sending alive e-Mail <<<<<"
+
+    echo "The Alive Deployment has started" | mail -s "Alive Deployment Started"
+    timothy.hessing@das.ohio.gov
+
+    date
+
+    #
+
+    echo "### Initialize HDFS for mydataset ###"
+
+    #
+
+    $HOME/make-hdfs-dir.sh $RUNNAME $RUNDATE
+
+    #
+
+    echo "### Create & Move Job Alive File to
+    /user/${RUNUSER}${RUNNAME}/${RUNDATE}/ ###"
+
+    date
+
+    date > $DATA/alive-job.txt
+
+    $KINIT -k -t "$KEYTAB" "$PRINCIPAL" || echo "Failed to authenticate to
+    kerberos using keytab ${KEYTAB} as ${PRINCIPAL}"
+
+    curl -vvv -i --noproxy '*' --negotiate -u : -k -H
+    "Content-Type:application/octet-stream" -X PUT -T $DATA/alive-job.txt
+    "${HTTPFS}/user/${RUNUSER}/alive-job.txt?op=CREATE&data=true"
+
+    #
+
+    echo "### Executing Keep Alive Script ###"
+
+    #
+
+    # Define Variables
+
+    pcnt=0
+
+    again=1
+
+    #
+
+    # Loop forever
+
+    while [ "$again" -ne 0 ]
+
+    do
+      pcnt=`expr $pcnt + 1`
+      echo "Loop #" $pcnt " Sleeping 60s"
+      sleep 60
+    done
+
+    #
+
+    exit 0

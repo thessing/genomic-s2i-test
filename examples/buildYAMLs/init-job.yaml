@@ -1,0 +1,100 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: init-job-1-9
+  namespace: test-01
+spec:
+  template:
+    metadata:
+      labels:
+        app: init-job-1-9
+    spec:
+      restartPolicy: Never
+      volumes:
+        - name: keytab
+          configMap:
+            name: 38173418-keytab
+            items:
+            - key: 38173418.keytab
+              path: 38173418.keytab
+            defaultMode: 365
+        - name: krb5-conf
+          configMap:
+            name: krb5-conf
+            items:
+            - key: krb5.conf
+              path: krb5.conf
+            defaultMode: 365
+        - name: mailrc
+          configMap:
+            name: mailrc-init
+            items:
+            - key: .mailrc
+              path: .mailrc
+            defaultMode: 365
+        - name: run-job
+          configMap:
+            name: job-init
+            items:
+            - key: job.sh
+              path: job.sh
+            defaultMode: 365
+        - name: data-disk
+          persistentVolumeClaim:
+            claimName: test-01-data-space
+        - name: ephemeral
+          emptyDir:
+            sizeLimit: 500Mi
+      containers:
+        - resources:
+            limits:
+              cpu: '3'
+              ephemeral-storage: 2Gi
+              memory: 32Gi
+            requests:
+              cpu: '1'
+              ephemeral-storage: 1Gi
+              memory: 8Gi
+          terminationMessagePath: /dev/termination-log
+          name: container
+          env:
+            - name: DATA
+              value: /data
+            - name: http_proxy
+              value: http://proxyoit.ohio.gov:8080
+            - name: https_proxy
+              value: http://proxyoit.ohio.gov:8080
+            - name: RUNDATE
+              value: "2023-12-04"
+            - name: RUNNAME
+              value: run000001
+            - name: RUNUSER
+              value: "38173418"
+            - name: TEMP
+              value: /temp01
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: keytab
+              mountPath: /opt/app-home/38173418.keytab
+              subPath: 38173418.keytab
+            - name: krb5-conf
+              mountPath: /etc/krb5.conf
+              subPath: krb5.conf
+            - name: mailrc
+              mountPath: /opt/app-home/.mailrc
+              subPath: .mailrc
+            - name: run-job
+              mountPath: /opt/app-home/job.sh
+              subPath: job.sh
+            - name: data-disk
+              mountPath: /data
+            - name: ephemeral
+              mountPath: /temp01
+          terminationMessagePolicy: File
+          image: iopconttest-registry-quay-quay-enterprise.apps.iopconttest.css.id.ohio.gov/timhessing/build-test:1.9
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      imagePullSecrets:
+        - name: timquay-01-config
+      schedulerName: default-scheduler

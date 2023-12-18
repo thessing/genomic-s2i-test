@@ -1,0 +1,35 @@
+kind: BuildConfig
+apiVersion: build.openshift.io/v1
+metadata:
+  name: pipeline-image-build-1-9
+  namespace: test-01
+spec:
+  nodeSelector: null
+  output:
+    to:
+      kind: DockerImage
+      name: iopconttest-registry-quay-quay-enterprise.apps.iopconttest.css.id.ohio.gov/timhessing/build-test:1.9
+  resources:
+    limits:
+      cpu: '3'
+      memory: 8Gi
+    requests:
+      cpu: '1'
+      memory: 1Gi
+  strategy:
+    type: Source
+    sourceStrategy:
+      from:
+        kind: DockerImage
+        name: iopconttest-registry-quay-quay-enterprise.apps.iopconttest.css.id.ohio.gov/timhessing/genomics-test:1.9
+      pullSecret:
+        name: timquay-01-config
+  postCommit: {}
+  source:
+    type: Git
+    git:
+      uri: 'git@dasbdagitp01.id.ohio.gov:38173418/genomic-s2i-test.git'
+    contextDir: /
+    sourceSecret:
+      name: timsoh
+  runPolicy: Serial

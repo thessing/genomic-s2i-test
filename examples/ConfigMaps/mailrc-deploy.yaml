@@ -1,0 +1,11 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: mailrc-deploy
+  namespace: test-01
+immutable: false
+data:
+  .mailrc: |-
+    set from="NO-REPLY-DEPLOY@das.ohio.gov"
+    set smtp=smtp://soccsmtp.das.ohio.gov:25
+    set ssl-verify=ignore

@@ -1,0 +1,9 @@
+create_default_packages:
+  - openssl
+channel_alias: https://package-repo.c32.data.ohio.gov/api/repo
+channels:
+  - iop-main
+  - iop-r
+  - conda-forge
+  - bioconda
+ssl_verify: False

@@ -1,0 +1,33 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: krb5-conf
+  namespace: test-01
+immutable: false
+data:
+  krb5.conf: |-
+
+    [logging]
+    default = FILE:/var/log/krb5libs.log
+    kdc = FILE:/var/log/krb5kdc.log
+    admin_server = FILE:/var/log/kadmind.log
+
+    [libdefaults]
+    default_realm=ID.OHIO.GOV
+    dns_lookup_realm = true
+    dns_lookup_kdc = true
+    ticket_lifetime = 24h
+    renew_lifetime = 7d
+    forwardable = true
+    rdns = false
+    allow_weak_crypto = true
+
+    [realms]
+    ID.OHIO.GOV = {
+    kdc = socdc04.id.ohio.gov
+    admin_server = socdc04.id.ohio.gov
+    }
+
+    [domain_realm]
+    id.ohio.gov = ID.OHIO.GOV
+    .id.ohio.gov = ID.OHIO.GOV

@@ -1,0 +1,11 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: mailrc-init
+  namespace: test-01
+immutable: false
+data:
+  .mailrc: |-
+    set from="NO-REPLY-INIT@das.ohio.gov"
+    set smtp=smtp://soccsmtp.das.ohio.gov:25
+    set ssl-verify=ignore

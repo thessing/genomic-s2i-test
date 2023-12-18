@@ -1,0 +1,20 @@
+docker login -u timhessing --password-stdin iopconttest-registry-quay-quay-enterprise.apps.iopconttest.css.id.ohio.gov
+Password: <enter password>
+Login Succeeded
+
+###----###
+go into the directory withthe DockerFile and run this command
+
+example (dockerfile for BaseSpace to be used to grab the data)
+
+##
+docker build --build-arg base_image="registry.access.redhat.com/ubi8/ubi:8.8" --build-arg image_name="Genomics Base Image" --build-arg version="1" --build-arg sub_version="8" -t genomics-test .
+docker image tag genomics-test iopconttest-registry-quay-quay-enterprise.apps.iopconttest.css.id.ohio.gov/timhessing/genomics-test:1.8
+docker image ls 
+docker image push iopconttest-registry-quay-quay-enterprise.apps.iopconttest.css.id.ohio.gov/timhessing/genomics-test:1.8
+
+
+--
+ktab -a <<OH|ID>>@id.ohio.gov@ID.OHIO.GOV <<password>>-k test.keytab
+
+klist -k test.keytab

@@ -1,0 +1,49 @@
+#!/bin/bash
+#
+# Uses a keytab to auth to kerberos and then creates an empty file/directory
+# to notify oozie that data is ready.
+# Specify the name of the dataset to notify for as the first argument,
+# and optionally the day in UTC during which the data is intended to be loaded
+# (defaults to the current day in UTC)
+# e.g. :
+#
+# /path/to/make-hdfs-dir.sh mydataset
+# OR
+# /path/to/make-hdfs-dir.sh mydataset 2023-11-30
+#
+
+KEYTAB=$HOME/38173418.keytab
+PRINCIPAL=38173418@ID.OHIO.GOV
+KINIT=/usr/bin/kinit
+CURL=/usr/bin/curl
+NOTIFY_PATH=/user/38173418
+READY_FILE=_READY
+HTTPFS="https://httpfs.c12.data.ohio.gov:14000/webhdfs/v1"
+function die {
+  echo "ERROR: $1"
+  exit 1 
+}
+
+DATASET_NAME=$1
+[ -z "$DATASET_NAME" ] && die "Please specify name of dataset to notify for as the first argument!"
+
+UTC_DAY="$2"
+if [ -z "$UTC_DAY" ]; then
+  TZ=UTC
+  UTC_DAY=`date +'%Y-%m-%d'`
+  echo "Using default date of $UTC_DAY UTC"
+fi
+
+[ -f "$KEYTAB" ] || die "keytab file $KEYTAB does not exist!"
+[ -x "$KINIT" ] || die "kinit binary $KINIT does not exist or is not executable!"
+[ -x "$CURL" ] || die "curl command $CURL does not exist or is not executable!"
+ 
+$KINIT -k -t "$KEYTAB" "$PRINCIPAL" || die "Failed to authenticate to kerberos using keytab $KEYTAB as $PRINCIPAL"
+
+TARGET_DIR="${NOTIFY_PATH}/${DATASET_NAME}/${UTC_DAY}"
+$CURL -vvv --noproxy '*' -f -X PUT -i --negotiate -u : "${HTTPFS}${TARGET_DIR}?op=MKDIRS&permission=1775" || die "Failed to create target dir ${TARGET_DIR} in HDFS"
+$CURL -vvv --noproxy '*' -f -X PUT -i --negotiate -u : "${HTTPFS}${TARGET_DIR}/${READY_FILE}?op=CREATE&overwrite=true" && \
+  $CURL -vvv --noproxy '*' -f -H "Content-Type: application/octet-stream" -X PUT -i --negotiate -u : "${HTTPFS}${TARGET_DIR}/${READY_FILE}?op=CREATE&overwrite=true&data=true" || die "Failed to create ${TARGET_DIR}/${READY_FILE}" || \
+    die "Failed to create ${TARGET_DIR}/${READY_FILE}"
+
+echo "${TARGET_DIR}/${READY_FILE} created"

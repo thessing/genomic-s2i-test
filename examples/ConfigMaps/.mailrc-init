@@ -1,0 +1,3 @@
+set from="NO-REPLY-INIT@das.ohio.gov"
+set smtp=smtp://soccsmtp.das.ohio.gov:25
+set ssl-verify=ignore

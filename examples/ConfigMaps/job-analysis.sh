@@ -1,0 +1,83 @@
+#!/bin/bash -e
+#
+# Analysis Job
+#
+date
+#
+KEYTAB=$HOME/$RUNUSER.keytab
+PRINCIPAL=$RUNUSER@ID.OHIO.GOV
+KINIT=/usr/bin/kinit
+CURL=/usr/bin/curl
+HTTPFS="https://httpfs.c12.data.ohio.gov:14000/webhdfs/v1"
+#
+echo ">>>>> Sending Starting e-Mail <<<<<"
+echo "The Analysis Job has started" | mail -s "Analysis Job Started" timothy.hessing@das.ohio.gov
+date
+echo ">>>>> Executing Analysis Job <<<<<"
+echo " "
+#
+# .mailrc
+echo ">>>>> mailrc Info <<<<<"
+ls -als $HOME/.mailrc
+cat $HOME/.mailrc
+echo " "
+#
+#
+echo "### Put data files from ${DATA}/${RUNNAME}/${RUNDATE}/"
+echo "### into  HDFS /user/${RUNUSER}/${RUNNAME}/${RUNDATE}/"
+#
+date
+date >  $DATA/$RUNNAME/$RUNDATE/analysis-job.txt
+ls -alsR /opt > $DATA/$RUNNAME/$RUNDATE/directories.txt
+ls -als $DATA/$RUNNAME/$RUNDATE
+#
+cd $DATA/$RUNNAME/$RUNDATE
+directory="."
+echo $directory
+# function iterate
+function iterate() {
+  local dir="$1"
+  for file in "$dir"/*; do
+    if [ -f "$file" ]; then
+      echo "${file//.\/}"
+      $KINIT -k -t "$KEYTAB" "$PRINCIPAL" || echo "Failed to authenticate to kerberos using keytab ${KEYTAB} as ${PRINCIPAL}"
+      $CURL -vvv --noproxy '*' -k -H "Content-Type:application/octet-stream" -X PUT -i --negotiate -u : -T "${file//.\/}" "${HTTPFS}/user/${RUNUSER}/${RUNNAME}/${RUNDATE}/${file//.\/}?op=CREATE&overwrite=true&data=true" \
+|| echo "Failed to copy ${file} to HDFS /user/${RUNUSER}/${RUNNAME}/${RUNDATE}/" 
+    fi
+    if [ -d "$file" ]; then
+      iterate "$file"
+    fi
+  done
+}
+#
+iterate "$directory"
+#
+# Define Variables
+pcnt=0
+again=1
+#
+# Loop 3 times
+while [ "$again" -ne 0 ]
+do
+  pcnt=`expr $pcnt + 1`
+  echo "Loop #" $pcnt " Sleeping 15 seconds"
+  sleep 15
+  if [ $pcnt -ge 3 ]
+  then
+    echo "Loop limit reached, stopping."
+    again=0
+  fi
+done
+#
+date
+#
+echo ">>>>> Sending Finished e-Mail <<<<<"
+echo "The Analysis Job has finished" | mail -s "Analysis Job Finished" timothy.hessing@das.ohio.gov
+#
+echo "Sleeping for 15 seconds to give finished email a chance to be sent"
+date
+sleep 15
+echo "Done sleeping"
+date
+#
+exit 0

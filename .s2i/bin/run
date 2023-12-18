@@ -4,7 +4,9 @@
 # For more information see the documentation:
 #	https://github.com/openshift/source-to-image/blob/master/docs/builder_image.md
 #
-
-# This is an example
-
-exec nextflow -version
+echo ">>>>> Executing RUN <<<<<"
+#
+#
+exec $HOME/job.sh
+#
+exit 0

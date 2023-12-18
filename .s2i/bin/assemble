@@ -1,0 +1,29 @@
+#!/bin/bash -e
+#
+# The S2I 'assemble' script builds your application source so that it is ready to run.
+#
+# For more information refer to the documentation:
+#	https://github.com/openshift/source-to-image/blob/master/docs/builder_image.md
+#
+echo ">>>>> Executing ASSEMBLE <<<<<"
+echo ">>>>> Image Description: " $IMAGE_DESCRIPTION
+echo " "
+echo ">>>>> HOME Directory >>>>>"
+ls -als $HOME
+echo " "
+#
+echo ">>>>> Clone Git >>>>>"
+git clone https://github.com/ODHL/AST_Workflow.git $HOME/AST_Workflow
+chmod -R a+rwx $HOME/AST_Workflow
+echo " "
+#
+echo ">>>>> Files Cloned >>>>>"
+ls $HOME/AST_Workflow
+#
+echo ">>>>> Configuring eMail >>>>>"
+echo "set from=\"NO-REPLY@das.ohio.gov\""       >  $HOME/.mailrc
+echo "set smtp=smtp://soccsmtp.das.ohio.gov:25" >> $HOME/.mailrc
+echo "set ssl-verify=ignore "                   >> $HOME/.mailrc
+more $HOME/.mailrc
+echo " "
+echo ">>>>> Assembly Finished >>>>>"

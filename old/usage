@@ -1,5 +1,6 @@
 #!/bin/bash -e
 cat <<EOF
+RUNNING USAGE:
 This is the Genomics S2I image:
 To use it, install S2I: https://github.com/openshift/source-to-image
 
